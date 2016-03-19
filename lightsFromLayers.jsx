@@ -13,7 +13,7 @@
 		var curLayer = sel[i];
 		var newLight = ai.layers.addLight("Lux", [0,0]);
 
-			newLight.lightType = 4014; //for spot. use 4014 for point.
+			newLight.lightType = LightType.SPOT // or LightType.POINT, LightType.PARALLEL, LightType.AMBIENT
 
 			newLight.position.setValue(curLayer.position.value);
 
