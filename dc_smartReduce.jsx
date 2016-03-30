@@ -120,7 +120,7 @@
 					if (used[j]==keepItems.comps[k]){
 						helpers.writeMsg(cmp.name + " matches a comp that's being kept. Keeping this comp as well.",true);
 						keepItems.comps.push(cmp);
-						unselectedItems.splice(i,1);
+						unselectedItems.comps.splice(i,1);
 					} else {
 
 						helpers.writeMsg("Can't find expression reference to comp " + cmp.name + ". Marking for removal.",true);
