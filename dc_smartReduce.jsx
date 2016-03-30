@@ -149,7 +149,7 @@
 	}
 
 	function purgeFolders(){
-		for (var i = app.project.numItems; i <= 1; --i){
+		for (var i = app.project.numItems; i >= 1; --i){
 			if(app.project.item(i).typeName == "Folder" && app.project.item(i).numItems == 0){
 				helpers.writeMsg("Removing folder " + app.project.item(i).name + " from project.",true);
 				counter.removed+=1;
