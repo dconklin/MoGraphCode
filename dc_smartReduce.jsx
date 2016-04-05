@@ -45,7 +45,9 @@
 						selectedItems.comps.push(itm);
 						keepItems.comps.push(itm);
 					} else {
-						unselectedItems.comps.push(itm);
+						if(selectedItems.comps.indexOf(itm)==-1){ // make sure this item isn't already being saved (child of selected folder)
+							unselectedItems.comps.push(itm);
+						}
 					}
 					break;
 				case "Footage":
@@ -53,11 +55,37 @@
 						selectedItems.footage.push(itm);
 						keepItems.comps.push(itm);
 					} else {
-						unselectedItems.footage.push(itm);
+						if(selectedItems.footage.indexOf(itm)==-1){ // make sure this item isn't already being saved (child of selected folder)
+							unselectedItems.footage.push(itm);
+						}
 					}
 					break;
 				case "Folder":
-					break;
+					if(itm.selected){
+						// This is necessary for when a folder is selected but it's children are not selected. This function
+						// recurses though child objects, and saves them.
+						(function saveFolderChildren(theItm){
+							switch(theItm.typeName){
+								case "Folder":
+									for(var i = 1; i <= theItm.numItems; ++i){
+										saveFolderChildren(theItm.item(i));
+									}
+									break;
+								case "Footage":
+									$.writeln("found Footage named " + theItm.name)
+									selectedItems.footage.push(theItm);
+									keepItems.comps.push(theItm);
+									break;
+								case "Composition":
+									$.writeln("found a comp named " + theItm.name)
+									selectedItems.comps.push(theItm);
+									keepItems.comps.push(theItm);
+									break;
+							}
+						})(itm);
+					} else{
+						break;
+					}
 				default:
 					helpers.writeMsg("Project item " + i + " - " + itm.typeName + " is not Composition or Footage. Skipping.",true);
 					break;
