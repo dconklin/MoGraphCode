@@ -1,3 +1,4 @@
+
 (function dc_smartReduce(thisObj){
 
 	var scriptData = {
