@@ -1,4 +1,3 @@
-
 (function dc_smartReduce(thisObj){
 
 	var scriptData = {
@@ -95,22 +94,57 @@
 		}
 	}
 
-	function getLayerExpressions(theProp){
-		if(theProp.numProperties > 0){
-			for (var i = 1; i <= theProp.numProperties-1; ++i){
-				getLayerExpressions(theProp.property(i));
+	function getNestedCompsFromComp(theComp){
 
+		//loop through the layers.
+		for (var i = 1; i <= theComp.numLayers; ++i){
+			if(theComp.layer(i).source instanceof CompItem){
+				helpers.writeMsg("Found nested comp " + theComp.layer(i).source.name + " inside of selected comp. Saving!", true);
+				selectedItems.comps.push(theComp.layer(i).source)
+				keepItems.comps.push(theComp.layer(i).source)
+
+				//recurse
+				getNestedCompsFromComp(theComp.layer(i).source);
 			}
-		}
-		if(theProp.canSetExpression && theProp.expression!=""){
-			expressions.push(theProp.expression);
-			helpers.writeMsg("Found expression: " + theProp.expression,true);
 		}
 
 	}
 
+	function getLayerExpressions(theProp,currIndent){
+		
+		currIndent = currIndent||"    "
+
+		if (theProp !== null){
+			var prop;
+			currIndent += "    ";			// Indent four more spaces
+			for (var i=1; i<=theProp.numProperties; i++){
+				prop = theProp.property(i);
+				switch (prop.propertyType)
+				{
+					case PropertyType.PROPERTY:
+						break;
+					case PropertyType.INDEXED_GROUP:
+						getLayerExpressions(prop, currIndent);
+						break;
+					case PropertyType.NAMED_GROUP:
+						getLayerExpressions(prop, currIndent);
+						break;
+					default:
+						break;
+				}
+			
+				if(prop.canSetExpression && prop.expression!=""){
+					expressions.push(prop.expression);
+					helpers.writeMsg("Found expression: " + prop.expression,true);
+				}
+			}	
+
+		}		
+		
+	}
+
 	function getCompsFromExpressions(theExpression){
-		var re = /(comp\(('|")).+(('|")\))/g; // matches comp("_______") with single or double quotes.
+		var re = /(comp\(('|")).+?(('|")\))/g; // matches comp("_______") with single or double quotes.
 		var compExp = theExpression.match(re);
 		if(compExp){ // make sure the expression matched something.
 			helpers.writeMsg("Expression contains a reference to a comp. Saving expression.",true);
@@ -129,6 +163,7 @@
 			// check names of unselected comps against comps found in expressions.
 			for(var j = 0; j < compList.length; ++j){
 				if (cmp.name == compList[j]){
+
 					counter.saved+=1;
 					helpers.writeMsg(cmp.name + " referenced in expressions. Saving expression.",true);
 					keepItems.comps.push(cmp); // add comps to 'keep items'
@@ -151,7 +186,6 @@
 						keepItems.comps.push(cmp);
 						unselectedItems.comps.splice(i,1);
 					} else {
-
 						helpers.writeMsg("Can't find expression reference to comp " + cmp.name + ". Marking for removal.",true);
 					}
 			}
@@ -192,6 +226,11 @@
 		helpers.writeMsg("Beginning " + scriptData.name + "! Thanks for using this script!",true);
 		
 		filterProject(); // sort the project.
+
+		// Get nested comps inside of selected comps.
+		for (var i = 0; i < selectedItems.comps.length; ++i){
+			getNestedCompsFromComp(selectedItems.comps[i]);
+		}
 
 		// Loop through selected comps and extract any expressions from
 		// their layers.
